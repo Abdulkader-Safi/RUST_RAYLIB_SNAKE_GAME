@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            text-align: center;
+        }
+        canvas {
+            border: 2px solid #333;
+            display: block;
+            margin: 0 auto;
+        }
+        #loading {
+            color: #fff;
+            font-size: 20px;
+            margin: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="loading">Loading game...</div>
+        <canvas id="canvas"></canvas>
+    </div>
+    <script>
+        var Module = {
+            canvas: document.getElementById('canvas'),
+            onRuntimeInitialized: function() {
+                document.getElementById('loading').classList.add('hidden');
+            },
+            print: function(text) {
+                console.log(text);
+            },
+            printErr: function(text) {
+                console.error(text);
+            }
+        };
+    </script>
+    <script src="GAME_JS_FILE"></script>
+</body>
+</html>

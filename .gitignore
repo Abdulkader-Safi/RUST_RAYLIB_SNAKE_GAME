@@ -1,1 +1,24 @@
+# Rust build artifacts
 /target
+Cargo.lock
+
+# Build output directories
+/build
+/dist
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Emscripten artifacts
+*.wasm
+*.js.mem
+*.data
+*.html.mem
+
+# OS specific
+Thumbs.db
