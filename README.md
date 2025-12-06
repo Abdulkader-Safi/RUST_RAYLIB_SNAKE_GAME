@@ -12,6 +12,8 @@ A classic Snake game built with Rust and Raylib, featuring frame-independent mov
 - FPS counter for performance monitoring
 - Clean, modular code structure following Rust best practices
 
+<iframe frameborder="0" src="https://itch.io/embed/4097095?bg_color=000000&amp;fg_color=ffffff" width="552" height="167"><a href="https://abdulkader-safi.itch.io/snake-game">Snake Game by Abdulkader-Safi</a></iframe>
+
 ## Images
 
 | Game                       | Game Over                          |
