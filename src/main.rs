@@ -14,7 +14,7 @@ const MAP_SIZE: f32 = 20.0;
 const SCREEN_WIDTH: f32 = MAP_SIZE * TILE_SIZE;
 const SCREEN_HEIGHT: f32 = MAP_SIZE * TILE_SIZE;
 
-const GAME_SPEED: u32 = 5;
+const MOVE_INTERVAL: f32 = 0.15; // Time in seconds between moves
 
 #[derive(PartialEq, Copy, Clone)]
 enum Direction {
@@ -175,13 +175,13 @@ fn main() {
         .vsync()
         .build();
 
-    rl.set_target_fps(30);
-    let mut frame_count = 0;
-
     let mut snake = Snake::new();
     let mut food = Food::new();
+    let mut move_timer = 0.0;
 
     while !rl.window_should_close() {
+        let delta_time = rl.get_frame_time();
+
         /*--- INPUT ---*/
         if rl.is_key_pressed(KEY_RIGHT) {
             snake.next_direction = Direction::RIGHT;
@@ -196,7 +196,9 @@ fn main() {
             snake.next_direction = Direction::UP;
         }
 
-        if frame_count % GAME_SPEED == 0 {
+        move_timer += delta_time;
+        if move_timer >= MOVE_INTERVAL {
+            move_timer -= MOVE_INTERVAL;
             snake.update();
         }
 
@@ -218,8 +220,6 @@ fn main() {
 
         snake.draw(&mut d);
         food.draw(&mut d);
-
-        frame_count += 1;
 
         d.draw_fps(10, 10);
     }
