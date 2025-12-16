@@ -1,6 +1,6 @@
 use raylib::prelude::*;
 
-use super::{Direction, MOVE_INTERVAL};
+use super::{Direction, GameState, MOVE_INTERVAL, MainMenu, MainMenuAction, OptionsMenu};
 use crate::entities::{Food, Snake};
 
 pub struct Game {
@@ -8,6 +8,10 @@ pub struct Game {
     food: Food,
     move_timer: f32,
     game_over: bool,
+    state: GameState,
+    main_menu: MainMenu,
+    options_menu: OptionsMenu,
+    should_close: bool,
 }
 
 impl Game {
@@ -17,32 +21,79 @@ impl Game {
             food: Food::new(),
             move_timer: 0.0,
             game_over: false,
+            state: GameState::MainMenu,
+            main_menu: MainMenu::new(),
+            options_menu: OptionsMenu::new(),
+            should_close: false,
         }
     }
 
-    pub fn handle_input(&mut self, rl: &RaylibHandle) {
-        if self.game_over {
-            if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {
-                self.restart();
-            }
-            return;
-        }
+    pub fn should_close(&self) -> bool {
+        self.should_close
+    }
 
-        if rl.is_key_pressed(KeyboardKey::KEY_RIGHT) || rl.is_key_pressed(KeyboardKey::KEY_D) {
-            self.snake.set_direction(Direction::Right);
-        }
-        if rl.is_key_pressed(KeyboardKey::KEY_DOWN) || rl.is_key_pressed(KeyboardKey::KEY_S) {
-            self.snake.set_direction(Direction::Down);
-        }
-        if rl.is_key_pressed(KeyboardKey::KEY_LEFT) || rl.is_key_pressed(KeyboardKey::KEY_A) {
-            self.snake.set_direction(Direction::Left);
-        }
-        if rl.is_key_pressed(KeyboardKey::KEY_UP) || rl.is_key_pressed(KeyboardKey::KEY_W) {
-            self.snake.set_direction(Direction::Up);
+    pub fn handle_input(&mut self, rl: &RaylibHandle, mouse_pos: Vector2, mouse_clicked: bool) {
+        match self.state {
+            GameState::MainMenu => match self.main_menu.handle_input(mouse_pos, mouse_clicked) {
+                MainMenuAction::Start => {
+                    self.state = GameState::Playing;
+                    self.restart();
+                }
+                MainMenuAction::Options => {
+                    self.state = GameState::Options;
+                }
+                MainMenuAction::Close => {
+                    self.should_close = true;
+                }
+                MainMenuAction::None => {}
+            },
+            GameState::Options => {
+                if self.options_menu.handle_input(mouse_pos, mouse_clicked) {
+                    self.state = GameState::MainMenu;
+                }
+            }
+            GameState::Playing => {
+                if self.game_over {
+                    if rl.is_key_pressed(KeyboardKey::KEY_SPACE) {
+                        self.restart();
+                    }
+                    if rl.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
+                        self.state = GameState::MainMenu;
+                        self.game_over = false;
+                    }
+                    return;
+                }
+
+                if rl.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
+                    self.state = GameState::MainMenu;
+                    return;
+                }
+
+                if rl.is_key_pressed(KeyboardKey::KEY_RIGHT)
+                    || rl.is_key_pressed(KeyboardKey::KEY_D)
+                {
+                    self.snake.set_direction(Direction::Right);
+                }
+                if rl.is_key_pressed(KeyboardKey::KEY_DOWN) || rl.is_key_pressed(KeyboardKey::KEY_S)
+                {
+                    self.snake.set_direction(Direction::Down);
+                }
+                if rl.is_key_pressed(KeyboardKey::KEY_LEFT) || rl.is_key_pressed(KeyboardKey::KEY_A)
+                {
+                    self.snake.set_direction(Direction::Left);
+                }
+                if rl.is_key_pressed(KeyboardKey::KEY_UP) || rl.is_key_pressed(KeyboardKey::KEY_W) {
+                    self.snake.set_direction(Direction::Up);
+                }
+            }
         }
     }
 
     pub fn update(&mut self, delta_time: f32) {
+        if self.state != GameState::Playing {
+            return;
+        }
+
         if self.game_over {
             return;
         }
@@ -65,13 +116,24 @@ impl Game {
         }
     }
 
-    pub fn draw(&self, d: &mut RaylibDrawHandle) {
-        self.snake.draw(d);
-        self.food.draw(d);
+    pub fn draw(&self, d: &mut RaylibDrawHandle, mouse_pos: Vector2) {
+        match self.state {
+            GameState::MainMenu => {
+                self.main_menu.draw(d, mouse_pos);
+            }
+            GameState::Options => {
+                self.options_menu.draw(d, mouse_pos);
+            }
+            GameState::Playing => {
+                self.snake.draw(d);
+                self.food.draw(d);
 
-        if self.game_over {
-            d.draw_text("GAME OVER!", 200, 250, 40, Color::WHITE);
-            d.draw_text("Press SPACE to restart", 170, 310, 25, Color::LIGHTGRAY);
+                if self.game_over {
+                    d.draw_text("GAME OVER!", 200, 250, 40, Color::WHITE);
+                    d.draw_text("Press SPACE to restart", 170, 310, 25, Color::LIGHTGRAY);
+                    d.draw_text("Press ESC for main menu", 170, 350, 25, Color::LIGHTGRAY);
+                }
+            }
         }
     }
 
