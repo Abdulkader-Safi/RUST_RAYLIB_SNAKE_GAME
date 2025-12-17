@@ -3,4 +3,6 @@ pub enum GameState {
     MainMenu,
     Options,
     Playing,
+    #[allow(dead_code)]
+    Closed,
 }

@@ -43,12 +43,24 @@ impl Game {
                     self.state = GameState::Options;
                 }
                 MainMenuAction::Close => {
-                    self.should_close = true;
+                    #[cfg(target_family = "wasm")]
+                    {
+                        self.state = GameState::Closed;
+                    }
+                    #[cfg(not(target_family = "wasm"))]
+                    {
+                        self.should_close = true;
+                    }
                 }
                 MainMenuAction::None => {}
             },
             GameState::Options => {
                 if self.options_menu.handle_input(mouse_pos, mouse_clicked) {
+                    self.state = GameState::MainMenu;
+                }
+            }
+            GameState::Closed => {
+                if rl.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
                     self.state = GameState::MainMenu;
                 }
             }
@@ -133,6 +145,49 @@ impl Game {
                     d.draw_text("Press SPACE to restart", 170, 310, 25, Color::LIGHTGRAY);
                     d.draw_text("Press ESC for main menu", 170, 350, 25, Color::LIGHTGRAY);
                 }
+            }
+            GameState::Closed => {
+                let title = "Thanks for playing!";
+                let title_size = 50;
+                let title_width = d.measure_text(title, title_size);
+                let title_x = (super::SCREEN_WIDTH - title_width as f32) / 2.0;
+                let title_y = super::SCREEN_HEIGHT / 2.0 - 80.0;
+
+                d.draw_text(
+                    title,
+                    title_x as i32,
+                    title_y as i32,
+                    title_size,
+                    Color::GREEN,
+                );
+
+                let subtitle = "You can close this tab now";
+                let subtitle_size = 20;
+                let subtitle_width = d.measure_text(subtitle, subtitle_size);
+                let subtitle_x = (super::SCREEN_WIDTH - subtitle_width as f32) / 2.0;
+                let subtitle_y = title_y + 70.0;
+
+                d.draw_text(
+                    subtitle,
+                    subtitle_x as i32,
+                    subtitle_y as i32,
+                    subtitle_size,
+                    Color::LIGHTGRAY,
+                );
+
+                let hint = "Press ESC to return to main menu";
+                let hint_size = 18;
+                let hint_width = d.measure_text(hint, hint_size);
+                let hint_x = (super::SCREEN_WIDTH - hint_width as f32) / 2.0;
+                let hint_y = subtitle_y + 40.0;
+
+                d.draw_text(
+                    hint,
+                    hint_x as i32,
+                    hint_y as i32,
+                    hint_size,
+                    Color::DARKGRAY,
+                );
             }
         }
     }
