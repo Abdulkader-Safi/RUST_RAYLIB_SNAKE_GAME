@@ -1,6 +1,8 @@
 use raylib::prelude::*;
 
-use super::{Direction, GameState, MOVE_INTERVAL, MainMenu, MainMenuAction, OptionsMenu};
+use super::{
+    Direction, GameState, MOVE_INTERVAL, MainMenu, MainMenuAction, OptionsMenu, OptionsMenuAction,
+};
 use crate::entities::{Food, Snake};
 
 pub struct Game {
@@ -12,6 +14,8 @@ pub struct Game {
     main_menu: MainMenu,
     options_menu: OptionsMenu,
     should_close: bool,
+    score: u32,
+    show_fps: bool,
 }
 
 impl Game {
@@ -23,13 +27,23 @@ impl Game {
             game_over: false,
             state: GameState::MainMenu,
             main_menu: MainMenu::new(),
-            options_menu: OptionsMenu::new(),
+            options_menu: OptionsMenu::new(true),
             should_close: false,
+            score: 0,
+            show_fps: true,
         }
     }
 
     pub fn should_close(&self) -> bool {
         self.should_close
+    }
+
+    pub fn show_fps(&self) -> bool {
+        self.show_fps
+    }
+
+    pub fn toggle_fps(&mut self) {
+        self.show_fps = !self.show_fps;
     }
 
     pub fn handle_input(&mut self, rl: &RaylibHandle, mouse_pos: Vector2, mouse_clicked: bool) {
@@ -54,11 +68,16 @@ impl Game {
                 }
                 MainMenuAction::None => {}
             },
-            GameState::Options => {
-                if self.options_menu.handle_input(mouse_pos, mouse_clicked) {
+            GameState::Options => match self.options_menu.handle_input(mouse_pos, mouse_clicked) {
+                OptionsMenuAction::Back => {
                     self.state = GameState::MainMenu;
                 }
-            }
+                OptionsMenuAction::ToggleFPS => {
+                    self.toggle_fps();
+                    self.options_menu.update_fps_checkbox(self.show_fps);
+                }
+                OptionsMenuAction::None => {}
+            },
             GameState::Closed => {
                 if rl.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
                     self.state = GameState::MainMenu;
@@ -124,6 +143,7 @@ impl Game {
             if self.snake.head_position() == self.food.position() {
                 self.food.respawn();
                 self.snake.grow();
+                self.score += 1;
             }
         }
     }
@@ -140,10 +160,20 @@ impl Game {
                 self.snake.draw(d);
                 self.food.draw(d);
 
+                // Draw score
+                let score_text = format!("Score: {}", self.score);
+                d.draw_text(&score_text, 10, 40, 30, Color::WHITE);
+
                 if self.game_over {
                     d.draw_text("GAME OVER!", 200, 250, 40, Color::WHITE);
-                    d.draw_text("Press SPACE to restart", 170, 310, 25, Color::LIGHTGRAY);
-                    d.draw_text("Press ESC for main menu", 170, 350, 25, Color::LIGHTGRAY);
+
+                    let final_score_text = format!("Final Score: {}", self.score);
+                    let score_width = d.measure_text(&final_score_text, 30);
+                    let score_x = (super::SCREEN_WIDTH - score_width as f32) / 2.0;
+                    d.draw_text(&final_score_text, score_x as i32, 300, 30, Color::YELLOW);
+
+                    d.draw_text("Press SPACE to restart", 170, 340, 25, Color::LIGHTGRAY);
+                    d.draw_text("Press ESC for main menu", 170, 380, 25, Color::LIGHTGRAY);
                 }
             }
             GameState::Closed => {
@@ -197,6 +227,7 @@ impl Game {
         self.food = Food::new();
         self.move_timer = 0.0;
         self.game_over = false;
+        self.score = 0;
     }
 }
 

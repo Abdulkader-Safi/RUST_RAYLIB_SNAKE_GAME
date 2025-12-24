@@ -10,4 +10,4 @@ pub use direction::Direction;
 pub use game::Game;
 pub use game_state::GameState;
 pub use main_menu::{MainMenu, MainMenuAction};
-pub use options_menu::OptionsMenu;
+pub use options_menu::{OptionsMenu, OptionsMenuAction};

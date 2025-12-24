@@ -28,7 +28,10 @@ fn main() {
         d.clear_background(Color::BLACK);
 
         game.draw(&mut d, mouse_pos);
-        d.draw_fps(10, 10);
+
+        if game.show_fps() {
+            d.draw_fps(10, 10);
+        }
     }
 
     #[cfg(target_family = "wasm")]
